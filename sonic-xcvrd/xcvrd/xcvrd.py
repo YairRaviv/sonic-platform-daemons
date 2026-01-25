@@ -1081,10 +1081,9 @@ class DaemonXcvrd(daemon_base.DaemonBase):
         self.log_info("Start daemon deinit...")
 
         # Pre-fetch warm/fast reboot status for all namespaces/ASICs
-        is_fast_reboot = common.is_fast_reboot_enabled()
         warm_fast_reboot_status = {}
         for namespace in self.namespaces:
-            warm_fast_reboot_status[namespace] = common.is_syncd_warm_restore_complete(namespace) or is_fast_reboot
+            warm_fast_reboot_status[namespace] = common.is_syncd_warm_restore_complete(namespace) or common.is_fast_reboot_enabled(namespace)
 
         # Delete all the information from DB and then exit
         port_mapping_data = port_event_helper.get_port_mapping(self.namespaces)
