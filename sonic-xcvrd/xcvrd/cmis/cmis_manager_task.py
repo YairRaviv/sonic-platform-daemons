@@ -73,6 +73,11 @@ class CmisManagerTask(threading.Thread):
     def get_asic_id(self, lport):
         return self.port_dict.get(lport, {}).get("asic_id", -1)
 
+    def is_fast_reboot_enabled_for_lport(self, lport):
+        asic_id = self.get_asic_id(lport)
+        namespace = common.get_namespace_from_asic_id(asic_id) if asic_id >= 0 else ''
+        return bool(common.is_fast_reboot_enabled(namespace))
+
     def update_port_transceiver_status_table_sw_cmis_state(self, lport, cmis_state_to_set):
         status_table = self.xcvr_table_helper.get_status_sw_tbl(self.get_asic_id(lport))
         if status_table is None:
@@ -731,7 +736,7 @@ class CmisManagerTask(threading.Thread):
         speed = port_info.get('speed')
         subport = port_info.get('subport')
         appl = port_info.get('appl', 0)
-        is_fast_reboot = common.is_fast_reboot_enabled()
+        is_fast_reboot = self.is_fast_reboot_enabled_for_lport(lport)
 
         self.port_dict[lport]['appl'] = common.get_cmis_application_desired(api, host_lane_count, speed)
         if self.port_dict[lport]['appl'] is None:
@@ -892,7 +897,6 @@ class CmisManagerTask(threading.Thread):
         subport = port_info.get('subport')
         pport = port_info.get('pport')
         sfp = port_info.get('sfp')
-        is_fast_reboot = common.is_fast_reboot_enabled()
 
         # CMIS expiration and retries
         #
@@ -1211,4 +1215,3 @@ class CmisManagerTask(threading.Thread):
             threading.Thread.join(self)
             if self.exc:
                 raise self.exc
-
